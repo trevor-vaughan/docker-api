@@ -101,7 +101,7 @@ describe Docker::Network, docker_1_9: true do
     let!(:container) do
       Docker::Container.create(
         'Cmd' => %w(sleep 10),
-        'Image' => 'debian:wheezy'
+        'Image' => 'debian:stable'
       )
     end
     subject { described_class.create(name) }
@@ -122,7 +122,7 @@ describe Docker::Network, docker_1_9: true do
     let!(:container) do
       Docker::Container.create(
         'Cmd' => %w(sleep 10),
-        'Image' => 'debian:wheezy'
+        'Image' => 'debian:stable'
       )
     end
 

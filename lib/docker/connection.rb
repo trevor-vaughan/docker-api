@@ -35,21 +35,43 @@ class Docker::Connection
 
   # Send a request to the server with the `
   def request(*args, &block)
+    retries ||= 0
     request = compile_request_params(*args, &block)
     log_request(request)
-    resource.request(request).body
-  rescue Excon::Errors::BadRequest => ex
-    raise ClientError, ex.response.body
-  rescue Excon::Errors::Unauthorized => ex
-    raise UnauthorizedError, ex.response.body
-  rescue Excon::Errors::NotFound => ex
-    raise NotFoundError, ex.response.body
-  rescue Excon::Errors::Conflict => ex
-    raise ConflictError, ex.response.body
-  rescue Excon::Errors::InternalServerError => ex
-    raise ServerError, ex.response.body
-  rescue Excon::Errors::Timeout => ex
-    raise TimeoutError, ex.message
+    begin
+      resource.request(request).body
+    rescue Excon::Errors::BadRequest => ex
+      if retries < 2
+        response_cause = ''
+        begin
+          response_cause = JSON.parse(ex.response.body)['cause']
+        rescue JSON::ParserError
+          #noop
+        end
+
+        if response_cause
+          # The error message will tell the application type given and then the
+          # application type that the message should be
+          matches = response_cause.scan(%r{(application/\S+)})
+          unless matches.count < 2
+            request[:headers]['Content-Type'] = matches.last
+            retries += 1
+            retry
+          end
+        end
+      end
+      raise ClientError, ex.response.body
+    rescue Excon::Errors::Unauthorized => ex
+      raise UnauthorizedError, ex.response.body
+    rescue Excon::Errors::NotFound => ex
+      raise NotFoundError, ex.response.body
+    rescue Excon::Errors::Conflict => ex
+      raise ConflictError, ex.response.body
+    rescue Excon::Errors::InternalServerError => ex
+      raise ServerError, ex.response.body
+    rescue Excon::Errors::Timeout => ex
+      raise TimeoutError, ex.message
+    end
   end
 
   def log_request(request)

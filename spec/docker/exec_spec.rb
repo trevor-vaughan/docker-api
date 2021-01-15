@@ -6,7 +6,7 @@ describe Docker::Exec do
   let(:container) {
     Docker::Container.create(
       'Cmd' => %w(sleep 300),
-      'Image' => 'debian:wheezy'
+      'Image' => 'debian:stable'
     ).start!
   }
 

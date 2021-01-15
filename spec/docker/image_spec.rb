@@ -10,7 +10,7 @@ describe Docker::Image do
     let(:connection) { Docker.connection }
 
     let(:info) do
-      {"id" => "bf119e2", "Repository" => "debian", "Tag" => "wheezy",
+      {"id" => "bf119e2", "Repository" => "debian", "Tag" => "stable",
         "Created" => 1364102658, "Size" => 24653, "VirtualSize" => 180116135}
     end
 
@@ -57,7 +57,7 @@ describe Docker::Image do
   describe '#insert_local' do
     include_context "local paths"
 
-    subject { described_class.create('fromImage' => 'debian:wheezy') }
+    subject { described_class.create('fromImage' => 'debian:stable') }
 
     let(:rm) { false }
     let(:new_image) {
@@ -197,7 +197,7 @@ describe Docker::Image do
   end
 
   describe '#tag' do
-    subject { described_class.create('fromImage' => 'debian:wheezy') }
+    subject { described_class.create('fromImage' => 'debian:stable') }
     after { subject.remove(:name => 'teh:latest', :noprune => true) }
 
     it 'tags the image with the repo name' do
@@ -209,7 +209,7 @@ describe Docker::Image do
   describe '#json' do
     before { skip_without_auth }
 
-    subject { described_class.create('fromImage' => 'debian:wheezy') }
+    subject { described_class.create('fromImage' => 'debian:stable') }
     let(:json) { subject.json }
 
     it 'returns additional information about image image' do
@@ -219,7 +219,7 @@ describe Docker::Image do
   end
 
   describe '#history' do
-    subject { described_class.create('fromImage' => 'debian:wheezy') }
+    subject { described_class.create('fromImage' => 'debian:stable') }
     let(:history) { subject.history }
 
     it 'returns the history of the Image' do
@@ -235,7 +235,7 @@ describe Docker::Image do
 
     subject do
       described_class.create(
-        {'fromImage' => 'debian:wheezy'})
+        {'fromImage' => 'debian:stable'})
     end
 
     let(:container) { subject.run(cmd, options).tap(&:wait) }
@@ -314,7 +314,7 @@ describe Docker::Image do
   end
 
   describe '#refresh!' do
-    let(:image) { Docker::Image.create('fromImage' => 'debian:wheezy') }
+    let(:image) { Docker::Image.create('fromImage' => 'debian:stable') }
 
     it 'updates the @info hash' do
       size = image.info.size
@@ -325,7 +325,7 @@ describe Docker::Image do
     context 'with an explicit connection' do
       let(:connection) { Docker::Connection.new(Docker.url, Docker.options) }
       let(:image) {
-        Docker::Image.create({'fromImage' => 'debian:wheezy'}, nil, connection)
+        Docker::Image.create({'fromImage' => 'debian:stable'}, nil, connection)
       }
 
       it 'updates using the provided connection' do
@@ -448,7 +448,7 @@ describe Docker::Image do
     let(:image) { subject.get(image_name) }
 
     context 'when the image does exist' do
-      let(:image_name) { 'debian:wheezy' }
+      let(:image_name) { 'debian:stable' }
 
       it 'returns the new image' do
         expect(image).to be_a Docker::Image
@@ -522,7 +522,7 @@ describe Docker::Image do
     let(:exists) { subject.exist?(image_name) }
 
     context 'when the image does exist' do
-      let(:image_name) { 'debian:wheezy' }
+      let(:image_name) { 'debian:stable' }
 
       it 'returns true' do
         expect(exists).to eq(true)
@@ -598,7 +598,7 @@ describe Docker::Image do
     subject { described_class }
 
     let(:images) { subject.all(:all => true) }
-    before { subject.create('fromImage' => 'debian:wheezy') }
+    before { subject.create('fromImage' => 'debian:stable') }
 
     it 'materializes each Image into a Docker::Image' do
       images.each do |image|
@@ -649,7 +649,7 @@ describe Docker::Image do
 
     context 'with a valid Dockerfile' do
       context 'without query parameters' do
-        let(:image) { subject.build("FROM debian:wheezy\n") }
+        let(:image) { subject.build("FROM debian:stable\n") }
 
         it 'builds an image' do
           expect(image).to be_a Docker::Image
@@ -661,7 +661,7 @@ describe Docker::Image do
       context 'with specifying a repo in the query parameters' do
         let(:image) {
           subject.build(
-            "FROM debian:wheezy\nRUN true\n",
+            "FROM debian:stable\nRUN true\n",
             "t" => "#{ENV['DOCKER_API_USER']}/debian:true"
           )
         }
@@ -681,10 +681,10 @@ describe Docker::Image do
       context 'with a block capturing build output' do
         let(:build_output) { "" }
         let(:block) { Proc.new { |chunk| build_output << chunk } }
-        let!(:image) { subject.build("FROM debian:wheezy\n", &block) }
+        let!(:image) { subject.build("FROM debian:stable\n", &block) }
 
         it 'calls the block and passes build output' do
-          expect(build_output).to match(/Step \d(\/\d)? : FROM debian:wheezy/)
+          expect(build_output).to match(/Step \d(\/\d)? : FROM debian:stable/)
         end
       end
     end
@@ -737,7 +737,7 @@ describe Docker::Image do
 
         it 'calls the block and passes build output' do
           image # Create the image variable, which is lazy-loaded by Rspec
-          expect(build_output).to match(/Step \d(\/\d)? : FROM debian:wheezy/)
+          expect(build_output).to match(/Step \d(\/\d)? : FROM debian:stable/)
         end
 
         context 'uses a cached version the second time' do
@@ -747,7 +747,7 @@ describe Docker::Image do
 
           it 'calls the block and passes build output' do
             image # Create the image variable, which is lazy-loaded by Rspec
-            expect(build_output).to match(/Step \d(\/\d)? : FROM debian:wheezy/)
+            expect(build_output).to match(/Step \d(\/\d)? : FROM debian:stable/)
             expect(build_output).to_not match(/Using cache/)
 
             image_two # Create the image_two variable, which is lazy-loaded by Rspec

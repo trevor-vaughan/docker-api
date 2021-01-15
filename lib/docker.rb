@@ -119,6 +119,15 @@ module Docker
     connection.get('/_ping')
   end
 
+  # Determine if the server is podman or docker.
+  def podman?(connection = self.connection)
+    not (
+      Array(version(connection)['Components']).find do |component|
+        component['Name'] && component['Name'].include?('Podman')
+      end
+    ).nil?
+  end
+
   # Login to the Docker registry.
   def authenticate!(options = {}, connection = self.connection)
     creds = MultiJson.dump(options)
@@ -132,5 +141,5 @@ module Docker
   module_function :default_socket_url, :env_url, :url, :url=, :env_options,
                   :options, :options=, :creds, :creds=, :logger, :logger=,
                   :connection, :reset!, :reset_connection!, :version, :info,
-                  :ping, :authenticate!, :ssl_options
+                  :ping, :podman?, :authenticate!, :ssl_options
 end
