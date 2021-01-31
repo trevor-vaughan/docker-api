@@ -227,7 +227,9 @@ class Docker::Image
     # Import an Image from the output of Docker::Container#export. The first
     # argument may either be a File or URI.
     def import(imp, opts = {}, conn = Docker.connection)
-      open(imp) do |io|
+      require 'open-uri'
+
+      URI.open(imp) do |io|
         import_stream(opts, conn) do
           io.read(Excon.defaults[:chunk_size]).to_s
         end
